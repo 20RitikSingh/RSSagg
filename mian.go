@@ -32,9 +32,12 @@ func main() {
 	if err != nil {
 		log.Fatal("db not connected", err)
 	}
+	db := database.New(conn)
 	apiCfg := apiConfig{
-		DB: database.New(conn),
+		DB: db,
 	}
+
+	go startScraping(db, 10, 1)
 
 	r := chi.NewRouter()
 
@@ -59,7 +62,7 @@ func main() {
 	v1Router.Get("/feed_follow", apiCfg.middlewareAuth(apiCfg.handlerGetFeedFollows))
 	v1Router.Post("/feed_follow", apiCfg.middlewareAuth(apiCfg.handlerCreateFeedFollow))
 	v1Router.Delete("/feed_follow/{feedFollowID}", apiCfg.middlewareAuth(apiCfg.handlerDeleteFeedFollow))
-
+	v1Router.Get("/posts", apiCfg.middlewareAuth(apiCfg.handlerGetPosts))
 	r.Mount("/v1", v1Router)
 
 	srv := &http.Server{

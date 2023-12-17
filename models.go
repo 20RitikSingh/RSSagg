@@ -29,6 +29,16 @@ type FeedFollow struct {
 	UserID    uuid.UUID `json:"user_id"`
 	FeedID    uuid.UUID `json:"feed_id"`
 }
+type post struct {
+	ID          uuid.UUID `json:"id"`
+	CreatedAt   time.Time `json:"created_at"`
+	UpdatedAt   time.Time `json:"updated_at"`
+	Title       string    `json:"title"`
+	Description *string   `json:"description"`
+	PublishedAt time.Time `json:"published_at"`
+	Url         string    `json:"url"`
+	FeedID      uuid.UUID `json:"feed_id"`
+}
 
 func dbUserToUser(dbUser database.User) User {
 	user := User{
@@ -78,4 +88,31 @@ func dbFeedFollowsToFeedFollows(dbFeed []database.FeedFollow) []FeedFollow {
 	}
 
 	return feedFollows
+}
+
+func dbPostToPost(dbposts database.Post) post {
+	var description *string
+	if dbposts.Description.Valid {
+		description = &dbposts.Description.String
+	}
+	return post{
+		ID:          dbposts.ID,
+		CreatedAt:   dbposts.CreatedAt,
+		UpdatedAt:   dbposts.UpdatedAt,
+		Title:       dbposts.Title,
+		Description: description,
+		PublishedAt: dbposts.PublishedAt,
+		Url:         dbposts.Url,
+		FeedID:      dbposts.FeedID,
+	}
+}
+
+func dbPostsToPosts(dbposts []database.Post) []post {
+	posts := []post{}
+
+	for _, post := range dbposts {
+		posts = append(posts, dbPostToPost(post))
+	}
+
+	return posts
 }
